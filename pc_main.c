@@ -47,8 +47,8 @@ void renderScreen(gb *cpu, SDL_Renderer *rend){
 void getInput(gb *cpu, SDL_Renderer *rend)
 {
     SDL_Event event;
-    BYTE key = 0;
-    
+    SIGNED_BYTE key = 0;
+
     while( SDL_PollEvent( &event ) )
     {
         if( event.type == SDL_QUIT ){
@@ -66,10 +66,10 @@ void getInput(gb *cpu, SDL_Renderer *rend)
                 case SDLK_LEFT : key = 1; break ;
                 case SDLK_RIGHT : key = 0; break ;
                 case SDLK_DOWN : key = 3; break ;
-                    
+
                 case SDLK_f : doScreenshoot(rend); return;
-                    
-                default: break ;
+
+                default: return;
             }
             if(event.type == SDL_KEYUP){
                 keyReleased(cpu, key);
