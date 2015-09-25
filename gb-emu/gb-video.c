@@ -48,8 +48,7 @@ void renderTiles(gb *cpu)
         tileData = 0x8000 ;
     else
     {
-        // IMPORTANT: This memory region uses signed
-        // bytes as tile identifiers
+        // IMPORTANT: This memory region uses signed bytes
         tileData = 0x8800 ;
         unsig= 0 ;
     }
@@ -104,8 +103,9 @@ void renderTiles(gb *cpu)
         WORD tileAddrss = backgroundMemory+tileRow+tileCol;
         if(unsig==1)
             tileNum =(BYTE)readMemory(cpu,tileAddrss);
-        else
+        else {
             tileNum =(SIGNED_BYTE)readMemory(cpu,tileAddrss );
+        }
         
         
         // deduce where this tile identifier is in memory.
@@ -140,7 +140,10 @@ void renderTiles(gb *cpu)
         // now we have the colour id, needed the palette 0xFF47
         BYTE palette = readMemory(cpu, 0xFF47);
         
+       // palette = 0xE4;
         BYTE col = getColour(colourNum, palette) ;
+        
+      //  printf("colNum %x, col %x (palette %x)\n",colourNum,col,palette);
         
         cpu->screenData[currentLine][pixel] = col;
     }
@@ -206,26 +209,27 @@ void renderSprites(gb *cpu)
                 colourNum <<= 1;
                 colourNum |= ((data1 >> (colourbit)) &0x1) ;
                 
+                /*Must ignore the alpha color*/
+                if(colourNum == 0)
+                    continue;
+                
                 WORD colourAddress;
                 if( (attributes & 0x10) != 0)
                     colourAddress = 0xFF49;
                 else
                     colourAddress = 0xFF48 ;
+                
                 BYTE palette = readMemory(cpu, colourAddress);
                 BYTE col = getColour(colourNum, palette ) ;
-                
-
-                /*Must ignore the alpha color*/
-                if(col == (palette &0x3) )
-                    continue;
                 
                 int xPix = 0 - tilePixel ;
                 xPix += 7 ;
                 int pixel = xPos+xPix ;
                 
                 // check if pixel is hidden behind background
-                if ((attributes &0x80) != 0 && cpu->screenData[currentLine][pixel] != 0 )
-                    continue ;
+                if ((attributes &0x80) != 0 && cpu->screenData[currentLine][pixel] != 0 ){
+                    continue;
+                }
                 /*I can draw the pixel*/
                 cpu->screenData[currentLine][pixel] = col;
             }

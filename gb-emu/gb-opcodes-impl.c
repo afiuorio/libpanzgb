@@ -259,50 +259,64 @@ void ADD_16BIT(gb *cpu, BYTE *regA, BYTE *regB, WORD src){
 }
 
 void ROTATE_LEFT(gb *cpu, BYTE *reg){
-    BYTE msb = ((*reg) >>7) &0x1;
     BYTE val = *reg;
+     BYTE msb = (val >>7) &0x1;
     val<<=1;
-    val |=msb;
-    
-    ROTATE_FLAG(cpu, msb, val);
+    val|=msb;
+    if(msb){
+        SET_CFLAG(cpu);
+    }
+    else{
+        RESET_CFLAG(cpu);
+    }
     *reg = val;
 }
 
 void ROTATE_RIGHT(gb *cpu, BYTE *reg){
-    BYTE lsb = (*reg) &0x1;
     BYTE val = *reg;
-    val>>=1;
-    val |=((lsb <<7) & 0x1);
-    
-    ROTATE_FLAG(cpu, lsb, val);
+    BYTE msb = (val &0x1);
+    if(msb){
+        val>>=1;
+        val|=0x80;
+        SET_CFLAG(cpu);
+    }
+    else{
+        val>>=1;
+        RESET_CFLAG(cpu);
+    }
     *reg = val;
 }
 
 void ROTATE_LEFT_CARRY(gb *cpu, BYTE *reg){
-    BYTE msb = ((*reg) >>7) &0x1;
-    BYTE carryFlag = (cpu->F >>4) &0x1;
-    BYTE val = *reg;
-    val<<=1;
-    val |=carryFlag;
     
-    ROTATE_FLAG(cpu, msb, val);
+    BYTE val = *reg;
+    BYTE msb = (val >>7) &0x1;
+    val<<=1;
+    if(cpu->F &0x10)
+        val |= 0x01;
+    if(msb)
+        SET_CFLAG(cpu);
+    else
+        RESET_CFLAG(cpu);
     *reg = val;
 }
 
 void ROTATE_RIGHT_CARRY(gb *cpu, BYTE *reg){
-    BYTE lsb = (*reg) &0x1;
-    BYTE carryFlag = (cpu->F >>4) &0x1;
     BYTE val = *reg;
+    BYTE msb = val &0x1;
     val>>=1;
-    val |=((carryFlag <<7) & 0x1);
-    
-    ROTATE_FLAG(cpu, lsb, val);
+    if(cpu->F &0x10)
+        val |= 0x80;
+    if(msb)
+        SET_CFLAG(cpu);
+    else
+        RESET_CFLAG(cpu);
     *reg = val;
 }
 
 void SHIFT_LEFT(gb *cpu, BYTE *reg){
-    BYTE msb = (*reg >> 7) &0x1;
     BYTE val = *reg;
+    BYTE msb = (val >> 7) &0x1;
     
     val<<=1;
     
@@ -311,9 +325,9 @@ void SHIFT_LEFT(gb *cpu, BYTE *reg){
 }
 
 void SHIFT_RIGHT_ARITH(gb *cpu, BYTE *reg){
-    BYTE lsb = (*reg) &0x1;
-    BYTE msb = (*reg >> 7) &0x1;
     BYTE val = *reg;
+    BYTE lsb = (val) &0x1;
+    BYTE msb = (val >> 7) &0x1;
     
     val>>=1;
     val |= ((msb<<7) &0x1);
@@ -323,8 +337,8 @@ void SHIFT_RIGHT_ARITH(gb *cpu, BYTE *reg){
 }
 
 void SHIFT_RIGHT(gb *cpu, BYTE *reg){
-    BYTE lsb = (*reg) &0x1;
     BYTE val = *reg;
+     BYTE lsb = (val) &0x1;
     
     val>>=1;
     

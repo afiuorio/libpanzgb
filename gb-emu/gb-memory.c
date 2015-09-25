@@ -55,7 +55,6 @@ void changeBanks(gb *cpu, WORD addr, BYTE data)
                 cpu->currentROMBank++ ;
         }
         else if (cpu->ROMType == 5){
-            printf("change rom bank = %x %x\n", addr, data);
             if(addr < 0x3000){
                 cpu->currentROMBank &= 0x0100;
                 cpu->currentROMBank |= data;
@@ -140,6 +139,7 @@ BYTE readMemory(gb *cpu, WORD addr){
 /*This function is necessary for replicate the ECHO (E000-FDFF) area*/
 
 void writeMemory(gb *cpu, WORD addr, BYTE data){
+
     /*This part is mapped on the rom, so read-only*/
     if (addr < 0x8000)
     {

@@ -12,6 +12,8 @@ void loadROM(gb *cpu, char * rom){
     fread(cpu->cartridge, 1, CARTRIDGE_SIZE, f);
     fclose(f);
     
+    //printf("%s\n",cpu->cartridge+NAME_CART);
+    
     switch (cpu->cartridge[0x147]){
         case 0:
         case 1:

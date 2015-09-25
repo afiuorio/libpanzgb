@@ -5,6 +5,8 @@
 
 #define GB_CLOCK 4194304
 
+#define NAME_CART 0x134
+
 #define CARTRIDGE_SIZE 0x200000
 #define MEMORY_SIZE 0x10000
 

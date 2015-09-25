@@ -4,9 +4,6 @@
 
 unsigned int executeOpcode(gb *cpu, BYTE opcode){
     BYTE val = 0;
-    //printf("PC %x = %x\n", cpu->progCounter-1, opcode);
-   /* if(cpu->progCounter-1 == 0x8000)
-        exit(2);*/
     SIGNED_BYTE s_val = 0;
     WORD val_16 = 0;
     switch (opcode){
@@ -326,7 +323,26 @@ unsigned int executeOpcode(gb *cpu, BYTE opcode){
             cpu->stack = getHL(cpu);
             return 8;
         case 0xF8:
-            LDHL(cpu);
+            GET_BYTE_PC(cpu, s_val);
+            val_16 = cpu->stack+ s_val;
+           // printf("F8: %x(%d) + %x(%d) = %x(%d)\n",cpu->stack, cpu->stack,s_val, s_val, val_16, val_16);
+            RESET_ZFLAG(cpu);
+            RESET_NFLAG(cpu);
+            
+            if(cpu->stack+ s_val > 0xFFFF)
+                SET_CFLAG(cpu);
+            else
+                RESET_CFLAG(cpu);
+            
+            if(cpu->stack+ s_val > 0x8FF)
+                SET_HFLAG(cpu);
+            else
+                RESET_HFLAG(cpu);
+            cpu->L = val_16 &0xFF;
+            cpu->H = ((val_16 >> 8) &0xFF);
+            
+            //cpu->stack = (bigVal &0xFFFF);
+            //LDHL(cpu);
             return 12;
         case 0x08:
             GET_WORD_PC(cpu, val_16);
@@ -702,20 +718,21 @@ unsigned int executeOpcode(gb *cpu, BYTE opcode){
             
         case 0xE8:
             GET_BYTE_PC(cpu, s_val);
-            int bigVal = cpu->stack+ s_val;
+            val_16 = cpu->stack+ s_val;
+           // printf("E8: %x(%d) + %x(%d) = %x(%d)\n",cpu->stack,cpu->stack, s_val,s_val,val_16, val_16);
             RESET_ZFLAG(cpu);
             RESET_NFLAG(cpu);
             
-            if(bigVal > 0xFFFF)
+            if(cpu->stack+ s_val > 0xFFFF)
                 SET_CFLAG(cpu);
             else
                 RESET_CFLAG(cpu);
             
-            if(bigVal > 0x8FF)
+            if(cpu->stack+ s_val > 0x8FF)
                 SET_HFLAG(cpu);
             else
                 RESET_HFLAG(cpu);
-            cpu->stack = s_val;
+            cpu->stack = val_16;
             return 16;
             
         case 0xCB:
