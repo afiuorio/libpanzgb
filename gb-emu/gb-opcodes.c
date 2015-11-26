@@ -5,6 +5,7 @@
 unsigned int executeOpcode(gb *cpu, BYTE opcode){
     BYTE val = 0;
     SIGNED_BYTE s_val = 0;
+    //printf("PC %x = %x\n",cpu->progCounter-1, opcode);
     WORD val_16 = 0;
     switch (opcode){
         case 0x00:
@@ -325,7 +326,6 @@ unsigned int executeOpcode(gb *cpu, BYTE opcode){
         case 0xF8:
             GET_BYTE_PC(cpu, s_val);
             val_16 = cpu->stack+ s_val;
-           // printf("F8: %x(%d) + %x(%d) = %x(%d)\n",cpu->stack, cpu->stack,s_val, s_val, val_16, val_16);
             RESET_ZFLAG(cpu);
             RESET_NFLAG(cpu);
             
@@ -341,8 +341,6 @@ unsigned int executeOpcode(gb *cpu, BYTE opcode){
             cpu->L = val_16 &0xFF;
             cpu->H = ((val_16 >> 8) &0xFF);
             
-            //cpu->stack = (bigVal &0xFFFF);
-            //LDHL(cpu);
             return 12;
         case 0x08:
             GET_WORD_PC(cpu, val_16);

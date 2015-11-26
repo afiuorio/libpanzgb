@@ -52,7 +52,7 @@ void renderTiles(gb *cpu)
         tileData = 0x8800 ;
         unsig= 0 ;
     }
-    
+        
     // which background mem?
     if (usingWindow == 0)
     {
@@ -82,6 +82,8 @@ void renderTiles(gb *cpu)
     // which line of the tile is being rendered ?
     WORD tileRow = (yPos/8)*32 ;
     
+    BYTE palette = readMemory(cpu, 0xFF47);
+    
     //Now I have to renderd the line, pixel by pixel
     for (int pixel = 0 ; pixel < 160; pixel++)
     {
@@ -98,54 +100,56 @@ void renderTiles(gb *cpu)
         WORD tileCol = (xPos/8) ;
         SIGNED_WORD tileNum ;
         
-        // get the tile identity number. Remember it can be signed
-        // or unsigned
         WORD tileAddrss = backgroundMemory+tileRow+tileCol;
         if(unsig==1)
             tileNum =(BYTE)readMemory(cpu,tileAddrss);
         else {
-            tileNum =(SIGNED_BYTE)readMemory(cpu,tileAddrss );
+            tileNum =(SIGNED_BYTE)readMemory(cpu,tileAddrss ) + 128;
         }
         
-        
         // deduce where this tile identifier is in memory.
-        WORD tileLocation = tileData ;
+        WORD tileLocation = tileData + (tileNum * 16);
         
-        if (unsig==1)
-            tileLocation += (tileNum * 16) ;
-        else
-            tileLocation += ((tileNum+128) *16) ;
-        
-        // find the correct vertical line we're on of the
-        // tile to get the tile data
-        //from in memory
         BYTE line = yPos % 8 ;
-        line *= 2; // each vertical line takes up two bytes of memory
+        line *= 2; // each line takes two bytes of memory
         BYTE data1 = readMemory(cpu,tileLocation + line) ;
         BYTE data2 = readMemory(cpu,tileLocation + line + 1) ;
-        
-        // pixel 0 in the tile is it 7 of data 1 and data2.
-        // Pixel 1 is bit 6 etc..
-        int colourBit = xPos % 8 ;
-        colourBit -= 7 ;
-        colourBit *= -1 ;
-        
-        // combine data 2 and data 1 to get the colour id for this pixel
-        // in the tile
-        int colourNum = (data2 >> (colourBit)) &0x1;
-        colourNum <<= 1;
-        colourNum |= ((data1 >> (colourBit)) &0x1) ;
-        
-        
-        // now we have the colour id, needed the palette 0xFF47
-        BYTE palette = readMemory(cpu, 0xFF47);
-        
-       // palette = 0xE4;
-        BYTE col = getColour(colourNum, palette) ;
-        
-      //  printf("colNum %x, col %x (palette %x)\n",colourNum,col,palette);
-        
-        cpu->screenData[currentLine][pixel] = col;
+      
+       /*if(xPos + 8 < 160){
+            WORD wordD1 = 0;
+            WORD wordD2 = 0;
+            
+            for(BYTE k = 0x80, index=7; k!=0; k>>=1, index--){
+                 wordD2 |= (WORD)(data2 & k) <<(index+1);
+                 wordD1 |= (WORD)(data1 & k) <<index;
+            }
+            
+            WORD colorLine = wordD2 | wordD1;
+           
+            for(BYTE k = 14, i = 0; i <8 ; i++,k-=2){
+                BYTE colourNum = (colorLine >> k)  & 0x3;
+                BYTE col = getColour(colourNum, palette) ;
+                
+                cpu->screenData[currentLine][pixel+i] = col;
+            }
+            //pixel+=7;
+            
+        }
+       else{*/
+            int colourBit = xPos % 8 ;
+            colourBit -= 7 ;
+            colourBit *= -1 ;
+            
+            int colourNum = (data2 >> (colourBit)) &0x1;
+            colourNum <<= 1;
+            colourNum |= ((data1 >> (colourBit)) &0x1) ;
+            
+            BYTE col = getColour(colourNum, palette) ;
+            
+            cpu->screenData[currentLine][pixel] = col;
+           /* if(colourNum == 0 )
+            	 cpu->screenData[currentLine][pixel] |= 0x80;*/
+        //}
     }
 }
 

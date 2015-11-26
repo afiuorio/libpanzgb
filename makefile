@@ -1,5 +1,5 @@
 OBJS = pc_main.c
-OBJS_EMU = gb-emu/gb-memory.c gb-emu/gc-imp.c gb-emu/gb-video.c gb-emu/gb-opcodes.c gb-emu/gc-interrupts.c gb-emu/gb-opcodes-impl.c
+OBJS_EMU = gb-emu/gb-memory.c gb-emu/mbc1.c gb-emu/gc-imp.c gb-emu/gb-video.c gb-emu/gb-opcodes.c gb-emu/gc-interrupts.c gb-emu/gb-opcodes-impl.c
 
 ifeq ($(OS),Windows_NT)
 CC = gcc
@@ -8,8 +8,8 @@ LIBRARY_PATHS = -LC:\mingw_dev_lib\lib
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2
 else
 CC = clang
-INCLUDE_PATHS =
-LIBRARY_PATHS =
+INCLUDE_PATHS = -I/Library/Frameworks/SDL2.framework/Headers
+LIBRARY_PATHS = -F/Library/Frameworks
 LINKER_FLAGS = -framework SDL2
 endif
 

@@ -77,9 +77,9 @@
     l = (_hi << 8) | l; \
 } while(0);
 
+typedef struct gameboy gb;
 
-
-typedef struct gameboy{
+struct gameboy{
     BYTE cartridge[CARTRIDGE_SIZE];
     BYTE memory[MEMORY_SIZE];
     
@@ -130,7 +130,9 @@ typedef struct gameboy{
     
     BYTE keymap;
     
-} gb;
+    void (*changeBank)(gb *, WORD, BYTE);
+    
+};
 
 void loadROM(gb *cpu,char *rom);
 void initGameBoy(gb *cpu);
@@ -151,6 +153,9 @@ void DMATransfert(gb *cpu, BYTE data);
 BYTE getKeypad(gb* cpu);
 void keyReleased(gb *cpu, int key);
 void keyPressed(gb *cpu, int key);
+
+void mbc1_changeBank(gb *cpu, WORD addr, BYTE data);
+void mbc3_changeBank(gb *cpu, WORD addr, BYTE data);
 
 unsigned int executeGameBoy(gb *cpu);
 unsigned int executeOpcode(gb *cpu, BYTE opcode);

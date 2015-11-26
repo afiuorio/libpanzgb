@@ -72,7 +72,7 @@ void ADD_8BIT(gb *cpu, BYTE *regA, BYTE regB){
     else
         RESET_ZFLAG(cpu);
     
-    WORD h = (*regA & 0xF) ;
+    WORD h = ((*regA) & 0xF) ;
     h += (regB & 0xF) ;
     
     if (h > 0xF)
@@ -85,7 +85,8 @@ void ADD_8BIT(gb *cpu, BYTE *regA, BYTE regB){
 
 void ADDC_8BIT(gb *cpu, BYTE *regA, BYTE regB){
     BYTE carry = (cpu->F &0x10)>>4;
-    ADD_8BIT(cpu, regA, regB+carry);
+    ADD_8BIT(cpu, regA, regB);
+    ADD_8BIT(cpu, regA, carry);
 }
 
 void SUB_8BIT(gb *cpu, BYTE *regA, BYTE regB){
@@ -115,7 +116,8 @@ void SUB_8BIT(gb *cpu, BYTE *regA, BYTE regB){
 
 void SUBC_8BIT(gb *cpu, BYTE *regA, BYTE regB){
     BYTE carry = (cpu->F &0x10)>>4;
-    SUB_8BIT(cpu, regA, regB + carry);
+    SUB_8BIT(cpu, regA, regB);
+    SUB_8BIT(cpu, regA, carry);
 }
 
 
@@ -132,7 +134,7 @@ void AND_8BIT(gb *cpu, BYTE *regA, BYTE regB){
 }
 
 void OR_8BIT(gb *cpu, BYTE *regA, BYTE regB){
-    BYTE val = *regA | regB;
+    BYTE val = (*regA) | regB;
     if(val==0)
         SET_ZFLAG(cpu);
     else
@@ -144,7 +146,7 @@ void OR_8BIT(gb *cpu, BYTE *regA, BYTE regB){
 }
 
 void XOR_8BIT(gb *cpu, BYTE *regA, BYTE regB){
-    BYTE val = *regA ^ regB;
+    BYTE val = (*regA) ^ regB;
     if(val==0)
         SET_ZFLAG(cpu);
     else
@@ -164,7 +166,7 @@ void CP_8BIT(gb *cpu, BYTE regB){
 void INC_8BIT(gb *cpu, BYTE *reg){
     BYTE val = *reg;
     val++;
-    if( (*reg &0xF) == 0)
+    if( ((*reg) &0xF) == 0)
         SET_HFLAG(cpu);
     else
         RESET_HFLAG(cpu);
@@ -177,9 +179,9 @@ void INC_8BIT(gb *cpu, BYTE *reg){
 }
 
 void DEC_8BIT(gb *cpu, BYTE *reg){
-    BYTE val = *reg;
+    SIGNED_BYTE val = *reg;
     val--;
-    if( (*reg &0xF) == 0)
+    if( ((*reg) &0xF) == 0)
         SET_HFLAG(cpu);
     else
         RESET_HFLAG(cpu);
@@ -199,26 +201,28 @@ void INC_16BIT(BYTE *regA, BYTE *regB){
 }
 
 void DEC_16BIT(BYTE *regA, BYTE *regB){
-    WORD value = ((*regA) <<8) | (*regB);
+    SIGNED_WORD value = ((*regA) <<8) | (*regB);
     value--;
     *regA = (value >> 8)&0xFF;
     *regB = value &0xFF;
 }
 
 void SWAP_NIBBLES(gb *cpu, BYTE *reg){
-    *reg = ((*reg << 4) & 0xF0) | ((*reg >>4) & 0xF);
-    if(*reg == 0)
+	BYTE val = *reg;
+    val = ((val << 4) & 0xF0) | ((val >>4) & 0xF);
+    if(val == 0)
         SET_ZFLAG(cpu);
     else
         RESET_ZFLAG(cpu);
     RESET_NFLAG(cpu);
     RESET_HFLAG(cpu);
     RESET_CFLAG(cpu);
+    *reg = val;
 }
 
 void TEST_BIT(gb *cpu, BYTE val, BYTE numBit){
-    val = (val >> numBit) &0x1;
-    if(val == 0)
+    BYTE val2 = (val >> numBit) &0x1;
+    if(val2 == 0)
         SET_ZFLAG(cpu);
     else
         RESET_ZFLAG(cpu);
@@ -237,7 +241,7 @@ void SET_BIT(gb *cpu, BYTE *val, BYTE numBit){
 }
 
 void ADD_16BIT(gb *cpu, BYTE *regA, BYTE *regB, WORD src){
-    int val = ((*regA<<8)) | (*regB &0xFF);
+    int val = (((*regA)<<8)) | ((*regB) &0xFF);
     val+=src;
     RESET_NFLAG(cpu);
     
@@ -263,18 +267,25 @@ void ROTATE_LEFT(gb *cpu, BYTE *reg){
      BYTE msb = (val >>7) &0x1;
     val<<=1;
     val|=msb;
+    cpu->F = 0;
     if(msb){
         SET_CFLAG(cpu);
     }
     else{
         RESET_CFLAG(cpu);
     }
+    if(val==0)
+        SET_ZFLAG(cpu);
+    else
+        RESET_ZFLAG(cpu);
+    
     *reg = val;
 }
 
 void ROTATE_RIGHT(gb *cpu, BYTE *reg){
     BYTE val = *reg;
     BYTE msb = (val &0x1);
+    cpu->F = 0;
     if(msb){
         val>>=1;
         val|=0x80;
@@ -284,20 +295,28 @@ void ROTATE_RIGHT(gb *cpu, BYTE *reg){
         val>>=1;
         RESET_CFLAG(cpu);
     }
+    if(val==0)
+        SET_ZFLAG(cpu);
+    else
+        RESET_ZFLAG(cpu);
     *reg = val;
 }
 
 void ROTATE_LEFT_CARRY(gb *cpu, BYTE *reg){
-    
     BYTE val = *reg;
     BYTE msb = (val >>7) &0x1;
     val<<=1;
     if(cpu->F &0x10)
-        val |= 0x01;
+        val |= 0x1;
     if(msb)
         SET_CFLAG(cpu);
     else
         RESET_CFLAG(cpu);
+    
+    if(val==0)
+        SET_ZFLAG(cpu);
+    else
+        RESET_ZFLAG(cpu);
     *reg = val;
 }
 
@@ -311,6 +330,11 @@ void ROTATE_RIGHT_CARRY(gb *cpu, BYTE *reg){
         SET_CFLAG(cpu);
     else
         RESET_CFLAG(cpu);
+    
+    if(val==0)
+        SET_ZFLAG(cpu);
+    else
+        RESET_ZFLAG(cpu);
     *reg = val;
 }
 
@@ -329,8 +353,9 @@ void SHIFT_RIGHT_ARITH(gb *cpu, BYTE *reg){
     BYTE lsb = (val) &0x1;
     BYTE msb = (val >> 7) &0x1;
     
+
     val>>=1;
-    val |= ((msb<<7) &0x1);
+    val |= ((msb<<7));
     
     ROTATE_FLAG(cpu, lsb, val);
     *reg = val;
