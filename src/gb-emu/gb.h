@@ -1,7 +1,7 @@
-#include "gb-types.h"
-
 #ifndef GB_H
 #define GB_H
+
+#include "gb-types.h"
 
 #define GB_CLOCK 4194304
 
@@ -141,12 +141,12 @@ void setGbBanking(gb *cpu);
 BYTE readMemory(gb *cpu, WORD addr);
 void writeMemory(gb *cpu, WORD addr, BYTE data);
 
-void increaseTimer(gb *cpu, int clocks);
+void increaseTimer(gb *cpu, BYTE clocks);
 void setTimerFreq(gb *cpu);
 void raiseInterrupt(gb *cpu, BYTE code);
 void handleInterrupts(gb *cpu);
 
-void handleGraphic(gb *cpu, unsigned int cycles);
+void handleGraphic(gb *cpu, BYTE cycles);
 
 void DMATransfert(gb *cpu, BYTE data);
 
@@ -158,7 +158,7 @@ void mbc1_changeBank(gb *cpu, WORD addr, BYTE data);
 void mbc3_changeBank(gb *cpu, WORD addr, BYTE data);
 
 unsigned int executeGameBoy(gb *cpu);
-unsigned int executeOpcode(gb *cpu, BYTE opcode);
+BYTE executeOpcode(gb *cpu, BYTE opcode);
 unsigned int extendedOpcodes(gb *cpu, BYTE opcode);
 
 #endif

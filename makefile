@@ -1,5 +1,7 @@
-OBJS = pc_main.c
-OBJS_EMU = gb-emu/gb-memory.c gb-emu/mbc1.c gb-emu/gc-imp.c gb-emu/gb-video.c gb-emu/gb-opcodes.c gb-emu/gc-interrupts.c gb-emu/gb-opcodes-impl.c
+SOURCES = src/pc_main.c $(wildcard src/gb-emu/*.c)
+OBJECTS=$(SOURCES:.c=.o)
+COMPILER_FLAGS = -c -O2 -std=c99
+EXECUTABLE = pangb
 
 ifeq ($(OS),Windows_NT)
 CC = gcc
@@ -13,8 +15,13 @@ LIBRARY_PATHS = -F/Library/Frameworks
 LINKER_FLAGS = -framework SDL2
 endif
 
-COMPILER_FLAGS = -O2 -std=c99
-OBJ_NAME = pangb
+all: $(SOURCES) $(EXECUTABLE)
+    
+$(EXECUTABLE): $(OBJECTS) 
+	$(CC) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(OBJECTS) -o $@
+.c.o:
+	$(CC) $(INCLUDE_PATHS) $(COMPILER_FLAGS) $< -o $@
 
-all : $(OBJS)
-	$(CC) $(OBJS) $(OBJS_EMU) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+clean: 
+	@rm src/*.o
+	@rm src/gb-emu/*.o

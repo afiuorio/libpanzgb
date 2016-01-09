@@ -11,7 +11,7 @@
 
 void makeSaveState(gb *cpu){
     FILE *f = fopen((char *)cpu->cartridge+NAME_CART, "wb");
-
+    
     fwrite(cpu, sizeof(gb), 1, f);
     printf("Created save state\n");
     fclose(f);
@@ -22,7 +22,7 @@ void loadSaveState(gb *cpu){
     FILE *f = fopen((char *)cpu->cartridge+NAME_CART, "rb");
     if(f==NULL)
         return;
-
+    
     fread(cpu, sizeof(gb), 1, f);
     printf("Loaded save state\n");
     fclose(f);
@@ -132,7 +132,7 @@ int main(int argc, char **argv){
         numOperation -= NUM_OP_60HZ;
         renderScreen(gameboy,renderer,surface);
         float deltaT=(float)1000/(60) - (float) (SDL_GetTicks()- timeStartFrame );
-      //  printf("delta %f\n",deltaT);
+      // printf("delta %f\n",deltaT);
         if(deltaT>0)
             SDL_Delay((unsigned int)deltaT);
     }

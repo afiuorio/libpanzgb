@@ -11,7 +11,7 @@ void setTimerFreq(gb *cpu){
     }
 }
 
-void handleDividerTimer(gb *cpu, int clocks){
+void handleDividerTimer(gb *cpu, BYTE clocks){
     cpu->clockBeforeDividerTimer -= clocks;
     if( cpu->clockBeforeDividerTimer <= 0){
         cpu->clockBeforeDividerTimer = 255;
@@ -19,7 +19,7 @@ void handleDividerTimer(gb *cpu, int clocks){
     }
 }
 
-void increaseTimer(gb *cpu, int clocks){
+void increaseTimer(gb *cpu, BYTE clocks){
     handleDividerTimer(cpu,clocks);
     /*Timer is enabled ?*/
     if( (readMemory(cpu, TIMER_CONTROLLER) & 0x4) != 0){
@@ -74,7 +74,7 @@ void handleInterrupts(gb *cpu){
     if(cpu->master_interr_switch != 0){
         /*Interrupts are enabled, let's see if there are some interrupts waiting*/
         if( mask != 0){ /*An interrupt is enabled and set*/
-            int i;
+            BYTE i;
             for (i = 0; i < 5; i++){
                 if ((mask & (0x1 << i)) != 0)
                     executeInterrupt(cpu, i);

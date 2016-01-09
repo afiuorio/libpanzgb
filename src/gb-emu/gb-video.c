@@ -2,8 +2,8 @@
 
 BYTE getColour(BYTE colourNum, BYTE palette)
 {
-    int hi = 0 ;
-    int lo = 0 ;
+	BYTE hi = 0 ;
+    BYTE lo = 0 ;
     
     // which bits of the colour palette does the colour id map to?
     switch (colourNum)
@@ -15,7 +15,7 @@ BYTE getColour(BYTE colourNum, BYTE palette)
     }
     
     // use the palette to get the colour
-    int colour = 0;
+    BYTE colour = 0;
     colour = ((palette >> (hi)) &0x1) << 1;
     colour |= ((palette >> (lo)) &0x1) ;
     
@@ -85,7 +85,7 @@ void renderTiles(gb *cpu)
     BYTE palette = readMemory(cpu, 0xFF47);
     
     //Now I have to renderd the line, pixel by pixel
-    for (int pixel = 0 ; pixel < 160; pixel++)
+    for (BYTE pixel = 0 ; pixel < 160; pixel++)
     {
         BYTE xPos = pixel+scrollX ;
         
@@ -136,11 +136,11 @@ void renderTiles(gb *cpu)
             
         }
        else{*/
-            int colourBit = xPos % 8 ;
+            BYTE colourBit = xPos % 8 ;
             colourBit -= 7 ;
             colourBit *= -1 ;
             
-            int colourNum = (data2 >> (colourBit)) &0x1;
+            BYTE colourNum = (data2 >> (colourBit)) &0x1;
             colourNum <<= 1;
             colourNum |= ((data1 >> (colourBit)) &0x1) ;
             
@@ -168,7 +168,7 @@ void renderSprites(gb *cpu)
      * 2 : data location in memory
      * 3 : several flags
      */
-    for (int index = 0 ; index < 40*4; index+=4)
+    for (BYTE index = 0 ; index < 40*4; index+=4)
     {
         BYTE yPos = readMemory(cpu,0xFE00+index) - 16;
         
@@ -183,7 +183,7 @@ void renderSprites(gb *cpu)
         BYTE xFlip = attributes & 0x20;
         
         // does this sprite intercept with the scanline?
-            int line = currentLine - yPos ;
+            BYTE line = currentLine - yPos ;
             
             // read the sprite in backwards in the y axis
             if (yFlip != 0)
@@ -199,9 +199,10 @@ void renderSprites(gb *cpu)
             
             // its easier to read in from right to left as pixel 0 is
             // bit 7 in the colour data, pixel 1 is bit 6 etc...
-            for (int tilePixel = 7; tilePixel >= 0; tilePixel--)
+            for (SIGNED_BYTE tilePixel = 7; tilePixel >= 0; tilePixel--)
             {
-                int colourbit = tilePixel ;
+            	/*Should do some refactoring for avoiding this signed pixel*/
+                SIGNED_BYTE colourbit = tilePixel ;
                 // read the sprite in backwards for the x axis
                 if (xFlip != 0)
                 {
@@ -209,7 +210,7 @@ void renderSprites(gb *cpu)
                     colourbit *= -1 ;
                 }
                 
-                int colourNum = (data2 >> (colourbit)) &0x1;
+                BYTE colourNum = (data2 >> (colourbit)) &0x1;
                 colourNum <<= 1;
                 colourNum |= ((data1 >> (colourbit)) &0x1) ;
                 
@@ -226,9 +227,9 @@ void renderSprites(gb *cpu)
                 BYTE palette = readMemory(cpu, colourAddress);
                 BYTE col = getColour(colourNum, palette ) ;
                 
-                int xPix = 0 - tilePixel ;
+                SIGNED_BYTE xPix = 0 - tilePixel ;
                 xPix += 7 ;
-                int pixel = xPos+xPix ;
+                BYTE pixel = xPos+(BYTE)xPix ;
                 
                 // check if pixel is hidden behind background
                 if ((attributes &0x80) != 0 && cpu->screenData[currentLine][pixel] != 0 ){
@@ -327,7 +328,7 @@ void updateLCD(gb* cpu)
 
 
 
-void handleGraphic(gb *cpu, unsigned int cycles)
+void handleGraphic(gb *cpu, BYTE cycles)
 {
     updateLCD(cpu);
     BYTE lcd_control = readMemory(cpu, LCD_REG_CONTROL);

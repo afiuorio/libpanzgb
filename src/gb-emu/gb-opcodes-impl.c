@@ -1,5 +1,6 @@
 #include "gb.h"
 #include "gb-opcode.h"
+#include <stdint.h>
 
 #define ROTATE_FLAG(cpu, bit, val) { \
     if(bit ==0) \
@@ -241,7 +242,7 @@ void SET_BIT(gb *cpu, BYTE *val, BYTE numBit){
 }
 
 void ADD_16BIT(gb *cpu, BYTE *regA, BYTE *regB, WORD src){
-    int val = (((*regA)<<8)) | ((*regB) &0xFF);
+    uint32_t val = (((*regA)<<8)) | ((*regB) &0xFF);
     val+=src;
     RESET_NFLAG(cpu);
     
@@ -373,7 +374,7 @@ void SHIFT_RIGHT(gb *cpu, BYTE *reg){
 
 void DAA(gb *cpu)
 {
-    int a = cpu->A;
+    uint32_t a = cpu->A;
     
     if( !(cpu->F &0x40)){
         if((cpu->F&0x20) || (a & 0xF)>9  )

@@ -2,7 +2,7 @@
 #include "gb.h"
 #include "gb-opcode.h"
 
-unsigned int executeOpcode(gb *cpu, BYTE opcode){
+BYTE executeOpcode(gb *cpu, BYTE opcode){
     BYTE val = 0;
     SIGNED_BYTE s_val = 0;
     //printf("PC %x = %x\n",cpu->progCounter-1, opcode);

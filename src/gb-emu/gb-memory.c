@@ -13,6 +13,13 @@ void setGbBanking(gb *cpu){
             cpu->currentROMBank = 1;
             cpu->changeBank = mbc1_changeBank;
             break;
+        
+       /* case 0x13 :
+            cpu->ROMType = 3;
+            cpu->currentROMBank = 1;
+            cpu->changeBank = mbc3_changeBank;
+            break;*/
+            
             
  /*       case 0x19 :
         case 0x1A :
@@ -21,7 +28,7 @@ void setGbBanking(gb *cpu){
             cpu->currentROMBank = 0;
             break;*/
     }
-
+    
     cpu->currentRAMBank = 0;
 }
 
@@ -34,7 +41,7 @@ BYTE readMemory(gb *cpu, WORD addr){
         WORD t = addr - 0x4000 ;
         return cpu->cartridge[t + (cpu->currentROMBank * 0x4000)] ;
     }
-
+    
     else if ((addr >= 0xA000) && (addr <= 0xBFFF))
     {
         WORD t = addr - 0xA000 ;
@@ -42,7 +49,7 @@ BYTE readMemory(gb *cpu, WORD addr){
     }
     else if(addr == 0xFF00)
         return getKeypad(cpu);
-
+    
     return cpu->memory[addr];
 }
 
@@ -55,7 +62,7 @@ void writeMemory(gb *cpu, WORD addr, BYTE data){
     {
         cpu->changeBank(cpu, addr,data) ;
     }
-
+    
     else if ((addr >= 0xA000) && (addr < 0xC000))
     {
         if (cpu->isRAMEnable != 0)
@@ -64,24 +71,24 @@ void writeMemory(gb *cpu, WORD addr, BYTE data){
             cpu->RAMBank[t + (cpu->currentRAMBank * 0x2000)] = data ;
         }
     }
-
+    
     else if ( ( addr >= 0xE000 ) && (addr < 0xFE00) )
     {
         cpu->memory[addr] = data ;
         writeMemory(cpu, addr-0x2000, data);
     }
-
+    
     /*Not usable */
     else if ( ( addr >= 0xFEA0 ) && (addr < 0xFEFF) )
     {
     }
-
+    
     else if (addr == TIMER_CONTROLLER)
     {
         BYTE freq = readMemory(cpu,TIMER_CONTROLLER) & 0x3;
         cpu->memory[TIMER_CONTROLLER] = data ;
         BYTE newfreq = readMemory(cpu,TIMER_CONTROLLER) & 0x3;
-
+        
         if (freq != newfreq)
             setTimerFreq(cpu);
     }
