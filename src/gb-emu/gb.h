@@ -33,10 +33,10 @@
 #define WINDOWY 0xFF4A
 #define WINDOWX 0xFF4B
 
-#define getAF(cpu) ((cpu->A <<8) | (cpu->F))
-#define getBC(cpu) ((cpu->B <<8) | (cpu->C))
-#define getDE(cpu) ((cpu->D <<8) | (cpu->E))
-#define getHL(cpu) ((cpu->H <<8) | (cpu->L))
+#define getAF(cpu) ((cpu->A << 8) | (cpu->F))
+#define getBC(cpu) ((cpu->B << 8) | (cpu->C))
+#define getDE(cpu) ((cpu->D << 8) | (cpu->E))
+#define getHL(cpu) ((cpu->H << 8) | (cpu->L))
 
 #define SET_ZFLAG(cpu) (cpu->F |= 0x80)
 #define SET_NFLAG(cpu) (cpu->F |= 0x40)
@@ -48,46 +48,46 @@
 #define RESET_HFLAG(cpu) (cpu->F &= ~(0x20))
 #define RESET_CFLAG(cpu) (cpu->F &= ~(0x10))
 
-#define PUSH(cpu, base, l) do{ \
-    base--; \
-    cpu->memory[base] = (l>>8) &0xFF; \
-    base--; \
-    cpu->memory[base] =  l &0xFF; \
-    base--; \
-} while(0);
+#define PUSH(cpu, base, l)                                                     \
+    do {                                                                       \
+        writeMemory(cpu, base - 2, l & 0xFF);                                  \
+        writeMemory(cpu, base - 1, (l >> 8) & 0xFF);                           \
+        base -= 2;                                                             \
+    } while (0);
 
-#define POP(cpu, base, l) do{ \
-    base++; \
-    BYTE _low = cpu->memory[base];\
-    base++; \
-    l = ((cpu->memory[base]) <<8) | _low; \
-    base++; \
-} while(0);
+#define POP(cpu, base, l)                                                      \
+    do {                                                                       \
+        BYTE _low = readMemory(cpu, base);                                     \
+        l = (readMemory(cpu, base + 1) << 8) | _low;                           \
+        base += 2;                                                             \
+    } while (0);
 
-#define GET_BYTE_PC(cpu, l) do{ \
-    l = readMemory(cpu,cpu->progCounter); \
-    cpu->progCounter++; \
-} while(0);
+#define GET_BYTE_PC(cpu, l)                                                    \
+    do {                                                                       \
+        l = readMemory(cpu, cpu->progCounter);                                 \
+        cpu->progCounter++;                                                    \
+    } while (0);
 
-#define GET_WORD_PC(cpu, l) do{ \
-    l = readMemory(cpu,cpu->progCounter); \
-    cpu->progCounter++; \
-    BYTE _hi = readMemory(cpu,cpu->progCounter); \
-    cpu->progCounter++; \
-    l = (_hi << 8) | l; \
-} while(0);
+#define GET_WORD_PC(cpu, l)                                                    \
+    do {                                                                       \
+        l = readMemory(cpu, cpu->progCounter);                                 \
+        cpu->progCounter++;                                                    \
+        BYTE _hi = readMemory(cpu, cpu->progCounter);                          \
+        cpu->progCounter++;                                                    \
+        l = (_hi << 8) | l;                                                    \
+    } while (0);
 
 typedef struct gameboy gb;
 
-struct gameboy{
+struct gameboy {
     BYTE cartridge[CARTRIDGE_SIZE];
     BYTE memory[MEMORY_SIZE];
-    
-    //Now the CPU registers
-    
+
+    // Now the CPU registers
+
     WORD progCounter;
     WORD stack;
-    
+
     BYTE A;
     BYTE B;
     BYTE C;
@@ -96,45 +96,44 @@ struct gameboy{
     BYTE F;
     BYTE H;
     BYTE L;
-    
+
     /*This part represent the memory banking system*/
-    
+
     BYTE ROMType; /*This variable represents the ROM type MBCx*/
     WORD currentROMBank;
     BYTE ROMBankType;
-    
-    BYTE RAMBank [0x10000]; /*This should contains all the RAM banks*/
+
+    BYTE RAMBank[0x10000]; /*This should contains all the RAM banks*/
     BYTE currentRAMBank;
     BYTE isRAMEnable;
-    
+
     /*This part helps handling the timers*/
-    
+
     int clockBeforeTimer;
     int clockBeforeDividerTimer;
-    
+
     /*This is the master interrupt switch*/
-    
+
     BYTE master_interr_switch;
     BYTE whenDisableInterrupts;
     BYTE enable_interr;
-    
+
     /*This area is for handle the LCD timing*/
-    
+
     int clockScanline;
-    
+
     /*This is the screen*/
-    
-    BYTE screenData [144][160];
-    
+
+    BYTE screenData[144][160];
+
     BYTE cpuHalted;
-    
+
     BYTE keymap;
-    
+
     void (*changeBank)(gb *, WORD, BYTE);
-    
 };
 
-void loadROM(gb *cpu,char *rom);
+void loadROM(gb *cpu, char *rom);
 void initGameBoy(gb *cpu);
 void setGbBanking(gb *cpu);
 
@@ -150,7 +149,7 @@ void handleGraphic(gb *cpu, BYTE cycles);
 
 void DMATransfert(gb *cpu, BYTE data);
 
-BYTE getKeypad(gb* cpu);
+BYTE getKeypad(gb *cpu);
 void keyReleased(gb *cpu, int key);
 void keyPressed(gb *cpu, int key);
 

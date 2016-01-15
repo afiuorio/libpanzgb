@@ -28,7 +28,6 @@ void DEC_16BIT(BYTE *regA, BYTE *regB);
 
 void JMP(gb *cpu, WORD addr);
 
-
 void ROTATE_LEFT(gb *cpu, BYTE *reg);
 void ROTATE_RIGHT(gb *cpu, BYTE *reg);
 void ROTATE_LEFT_CARRY(gb *cpu, BYTE *reg);
