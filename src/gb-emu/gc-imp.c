@@ -1,7 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "gb.h"
+#include "gb-impl.h"
+#include "gb-opcode.h"
 
 void loadROM(gb *cpu, char *rom) {
     FILE *f = fopen(rom, "rb");
@@ -162,12 +163,20 @@ void keyPressed(gb *cpu, int key) {
         raiseInterrupt(cpu, 4);
 }
 
-unsigned int executeGameBoy(gb *cpu) {
+void changeKeyState(gb *cpu, BYTE key, BYTE state) {
+    if (state == GB_KEY_PRESSED) {
+        keyPressed(cpu, key);
+    } else
+        keyReleased(cpu, key);
+}
+
+BYTE executeGameBoy(gb *cpu) {
     BYTE opcode;
     BYTE numClock = 4;
 
     if (cpu->cpuHalted != 0) {
         GET_BYTE_PC(cpu, opcode);
+        // numClock = hashMap[opcode](cpu);
         numClock = executeOpcode(cpu, opcode);
 
         if (cpu->whenDisableInterrupts > 0) {
@@ -182,4 +191,19 @@ unsigned int executeGameBoy(gb *cpu) {
     handleGraphic(cpu, numClock);
 
     return numClock;
+}
+
+gb *newGameboy(char *rom) {
+    gb *game = malloc(sizeof(gb));
+    if (!game) {
+        return NULL;
+    }
+    loadROM(game, rom);
+    initGameBoy(game);
+    // loadSaveRam(game);
+    return game;
+}
+
+char *getGameName(gb *cpu) {
+    return (char *)cpu->cartridge + NAME_CART;
 }

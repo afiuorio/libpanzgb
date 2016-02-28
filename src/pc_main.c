@@ -1,28 +1,28 @@
 #include <SDL2/SDL.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "gb-emu/gb.h"
 
-#define NUM_OP_60HZ (GB_CLOCK / 59.7) * 1
+#define NUM_OP_60HZ (GB_CLOCK / 59.7)
 
 #define SCALE 5
 
 void makeSaveState(gb *cpu) {
-    FILE *f = fopen((char *)cpu->cartridge + NAME_CART, "wb");
+    FILE *f = fopen("savestate", "wb");
 
-    fwrite(cpu, sizeof(gb), 1, f);
+    /*0x225a30 is sizeof(gb) on x64*/
+    fwrite(cpu, 0x225a30, 1, f);
     printf("Created save state\n");
     fclose(f);
 }
 
 void loadSaveState(gb *cpu) {
-    FILE *f = fopen((char *)cpu->cartridge + NAME_CART, "rb");
+    FILE *f = fopen("savestate", "rb");
     if (f == NULL)
         return;
 
-    fread(cpu, sizeof(gb), 1, f);
+    fread(cpu, 0x225a30, 1, f);
     printf("Loaded save state\n");
     setGbBanking(cpu);
     fclose(f);
@@ -43,30 +43,14 @@ void doScreenshoot(SDL_Renderer *renderer) {
 void renderScreen(gb *cpu, SDL_Renderer *rend, SDL_Surface *surface) {
     int x, y;
     int j;
-    BYTE color = 0x00;
     SDL_Rect rectangle;
     rectangle.h = SCALE;
     for (y = 0; y < 144; y++) {
         for (x = 0; x < 160; x++) {
-            BYTE col = cpu->screenData[y][x];
-            for (j = x + 1; col == cpu->screenData[y][j] && j < 160; j++)
+            BYTE color = getPixelColor(cpu, x, y);
+            for (j = x + 1; color == getPixelColor(cpu, j, y) && j < 160; j++)
                 ;
-            switch (col) {
-            case 0:
-                color = 0xff;
-                break;
-            case 1:
-                color = 0xcc;
-                break;
-            case 2:
-                color = 0x77;
-                break;
-            case 3:
-                color = 0x00;
-                break;
-            }
             rectangle.w = SCALE * (j - x);
-            rectangle.h = SCALE;
             rectangle.x = x * SCALE;
             rectangle.y = y * SCALE;
             x = j - 1;
@@ -92,28 +76,28 @@ void getInput(gb *cpu, SDL_Renderer *rend) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             switch (event.key.keysym.sym) {
             case SDLK_z:
-                key = 4;
+                key = GB_K_A;
                 break;
             case SDLK_x:
-                key = 5;
+                key = GB_K_B;
                 break;
             case SDLK_RETURN:
-                key = 7;
+                key = GB_K_START;
                 break;
             case SDLK_SPACE:
-                key = 6;
+                key = GB_K_SELECT;
                 break;
             case SDLK_UP:
-                key = 2;
+                key = GB_K_UP;
                 break;
             case SDLK_LEFT:
-                key = 1;
+                key = GB_K_LEFT;
                 break;
             case SDLK_RIGHT:
-                key = 0;
+                key = GB_K_RIGHT;
                 break;
             case SDLK_DOWN:
-                key = 3;
+                key = GB_K_DOWN;
                 break;
 
             case SDLK_f:
@@ -130,32 +114,31 @@ void getInput(gb *cpu, SDL_Renderer *rend) {
                 return;
             }
             if (event.type == SDL_KEYUP) {
-                keyReleased(cpu, key);
+                changeKeyState(cpu, key, GB_KEY_RELEASED);
             } else {
-                keyPressed(cpu, key);
+                changeKeyState(cpu, key, GB_KEY_PRESSED);
             }
         }
     }
 }
+
 gb *gameboy;
 
 int main(int argc, char **argv) {
-    gameboy = malloc(sizeof(gb));
+    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_Window *window = SDL_CreateWindow("pangb", SDL_WINDOWPOS_UNDEFINED,
+                                          SDL_WINDOWPOS_UNDEFINED, 160 * SCALE,
+                                          144 * SCALE, SDL_WINDOW_OPENGL);
+    SDL_Renderer *renderer =
+        SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Surface *surface =
+        SDL_CreateRGBSurface(0, 160 * SCALE, 144 * SCALE, 32, 0, 0, 0, 0);
+
+    gameboy = newGameboy(argv[1]);
     if (!gameboy) {
         fprintf(stderr, "Error on memory allocation\n");
         exit(EXIT_FAILURE);
     }
-    SDL_Renderer *renderer;
-    SDL_Window *window;
-    SDL_Init(SDL_INIT_EVERYTHING);
-    window = SDL_CreateWindow("pangb", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, 160 * SCALE, 144 * SCALE,
-                              SDL_WINDOW_OPENGL);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Surface *surface =
-        SDL_CreateRGBSurface(0, 160 * SCALE, 144 * SCALE, 32, 0, 0, 0, 0);
-    loadROM(gameboy, argv[1]);
-    initGameBoy(gameboy);
     unsigned int numOperation = 0;
     while (1) {
         unsigned int timeStartFrame = SDL_GetTicks();
@@ -165,7 +148,7 @@ int main(int argc, char **argv) {
         numOperation -= NUM_OP_60HZ;
         renderScreen(gameboy, renderer, surface);
         float deltaT =
-            (float)1000 / (60) - (float)(SDL_GetTicks() - timeStartFrame);
+            (float)1000 / (59.7) - (float)(SDL_GetTicks() - timeStartFrame);
         // printf("delta %f\n",deltaT);
         if (deltaT > 0)
             SDL_Delay((unsigned int)deltaT);

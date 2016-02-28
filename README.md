@@ -14,4 +14,4 @@ At the moment pangb doesn't support:
 
 ## Build
 
-pangb uses [SDL 2.0](http://www.libsdl.org). A makefile for Windows and OSX is provided but it should be possible to compile the project on Linux too.
+pangb uses [SDL 2.0](http://www.libsdl.org). A makefile for Windows (win), Linux (linux) and OSX (osx) is provided.

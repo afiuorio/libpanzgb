@@ -1,4 +1,4 @@
-#include "gb.h"
+#include "gb-impl.h"
 #include "gb-opcode.h"
 #include <stdint.h>
 

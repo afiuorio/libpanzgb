@@ -1,13 +1,14 @@
-#include "gb.h"
+#include "gb-impl.h"
 
 void mbc1_changeBank(gb *cpu, WORD addr, BYTE data) {
     // RAM enabling
     if (addr < 0x2000) {
         BYTE testData = data & 0xF;
-        if (testData == 0x0)
+        if (testData == 0x0) {
             cpu->isRAMEnable = 0;
-        else
+        } else {
             cpu->isRAMEnable = 1;
+        }
     }
 
     /*Change ROM bank*/

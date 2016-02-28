@@ -1,28 +1,11 @@
-#include "gb.h"
+#include "gb-impl.h"
 
 BYTE getColour(BYTE colourNum, BYTE palette) {
     BYTE hi = 0;
     BYTE lo = 0;
 
-    // which bits of the colour palette does the colour id map to?
-    switch (colourNum) {
-    case 0:
-        hi = 1;
-        lo = 0;
-        break;
-    case 1:
-        hi = 3;
-        lo = 2;
-        break;
-    case 2:
-        hi = 5;
-        lo = 4;
-        break;
-    case 3:
-        hi = 7;
-        lo = 6;
-        break;
-    }
+    lo = colourNum * 2;
+    hi = lo+1;
 
     // use the palette to get the colour
     BYTE colour = 0;
@@ -42,7 +25,12 @@ void renderTiles(gb *cpu) {
     BYTE scrollY = readMemory(cpu, SCROLLY);
     BYTE scrollX = readMemory(cpu, SCROLLX);
     BYTE windowY = readMemory(cpu, WINDOWY);
-    BYTE windowX = readMemory(cpu, WINDOWX) - 7;
+    BYTE windowX = readMemory(cpu, WINDOWX);
+
+    if (windowX < 7) {
+        windowX = 7;
+    }
+    windowX -= 7;
 
     BYTE currentLine = readMemory(cpu, LCD_SCANLINE_ADRR);
     BYTE usingWindow = 0;
@@ -55,23 +43,9 @@ void renderTiles(gb *cpu) {
     if ((lcd_control & 0x10) != 0)
         tileData = 0x8000;
     else {
-        // IMPORTANT: This memory region uses signed bytes
+        // This memory region uses signed bytes
         tileData = 0x8800;
         unsig = 0;
-    }
-
-    // which background mem?
-    if (usingWindow == 0) {
-        if ((lcd_control & 0x8) != 0)
-            backgroundMemory = 0x9C00;
-        else
-            backgroundMemory = 0x9800;
-    } else {
-        // which window memory?
-        if ((lcd_control & 0x40) != 0)
-            backgroundMemory = 0x9C00;
-        else
-            backgroundMemory = 0x9800;
     }
 
     BYTE yPos = 0;
@@ -80,22 +54,36 @@ void renderTiles(gb *cpu) {
     // current scanline is drawing
     if (usingWindow == 0)
         yPos = scrollY + currentLine;
-    else
-        yPos = currentLine + windowY;
+    else {
+        yPos = currentLine - windowY;
+    }
 
     // which line of the tile is being rendered ?
     WORD tileRow = (yPos / 8) * 32;
 
     BYTE palette = readMemory(cpu, 0xFF47);
+    BYTE colorMap[4] = {getColour(0, palette), getColour(1, palette),
+                        getColour(2, palette), getColour(3, palette)};
 
     // Now I have to render the line, pixel by pixel
     for (BYTE pixel = 0; pixel < 160; pixel++) {
         BYTE xPos = pixel + scrollX;
 
+        if ((lcd_control & 0x08) != 0)
+            backgroundMemory = 0x9C00;
+        else
+            backgroundMemory = 0x9800;
+
         // translate the current x pos to window space if necessary
         if (usingWindow == 1) {
-            // if (pixel >= windowX)
-            xPos = pixel + windowX;
+            if (pixel >= windowX) {
+                // This means I'm in the window
+                xPos = pixel - windowX;
+                if ((lcd_control & 0x40) != 0)
+                    backgroundMemory = 0x9c00;
+                else
+                    backgroundMemory = 0x9800;
+            }
         }
 
         // which of the 32 horizontal tiles does this xPos fall within?
@@ -115,31 +103,10 @@ void renderTiles(gb *cpu) {
         WORD tileLocation = tileData + (tileNum * 16);
 
         BYTE line = yPos % 8;
-        line *= 2; // each line takes two bytes of memory
+        line *= 2; // each line takes two bytes
         BYTE data1 = readMemory(cpu, tileLocation + line);
         BYTE data2 = readMemory(cpu, tileLocation + line + 1);
 
-        /*if(xPos + 8 < 160){
-             WORD wordD1 = 0;
-             WORD wordD2 = 0;
-
-             for(BYTE k = 0x80, index=7; k!=0; k>>=1, index--){
-                  wordD2 |= (WORD)(data2 & k) <<(index+1);
-                  wordD1 |= (WORD)(data1 & k) <<index;
-             }
-
-             WORD colorLine = wordD2 | wordD1;
-
-             for(BYTE k = 14, i = 0; i <8 ; i++,k-=2){
-                 BYTE colourNum = (colorLine >> k)  & 0x3;
-                 BYTE col = getColour(colourNum, palette) ;
-
-                 cpu->screenData[currentLine][pixel+i] = col;
-             }
-             //pixel+=7;
-
-         }
-        else{*/
         BYTE colourBit = xPos % 8;
         colourBit -= 7;
         colourBit *= -1;
@@ -148,12 +115,9 @@ void renderTiles(gb *cpu) {
         colourNum <<= 1;
         colourNum |= ((data1 >> (colourBit)) & 0x1);
 
-        BYTE col = getColour(colourNum, palette);
+        BYTE col = colorMap[colourNum];
 
         cpu->screenData[currentLine][pixel] = col;
-        /* if(colourNum == 0 )
-              cpu->screenData[currentLine][pixel] |= 0x80;*/
-        //}
     }
 }
 
@@ -344,4 +308,24 @@ void handleGraphic(gb *cpu, BYTE cycles) {
         else if (currentline < 144)
             drawScanline(cpu);
     }
+}
+
+BYTE getPixelColor(gb *cpu, BYTE x, BYTE y) {
+    BYTE col = cpu->screenData[y][x];
+    BYTE color = 0;
+    switch (col) {
+    case 0:
+        color = BLACK_COL;
+        break;
+    case 1:
+        color = GRAY_COL;
+        break;
+    case 2:
+        color = LIGHTGRAY_COL;
+        break;
+    case 3:
+        color = WHITE_COL;
+        break;
+    }
+    return color;
 }

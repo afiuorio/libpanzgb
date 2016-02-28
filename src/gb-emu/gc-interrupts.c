@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "gb.h"
+#include "gb-impl.h"
 
 void setTimerFreq(gb *cpu) {
     BYTE freq = readMemory(cpu, TIMER_CONTROLLER) & 0x3;

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "gb.h"
+#include "gb-impl.h"
 #include "gb-opcode.h"
 
 BYTE executeOpcode(gb *cpu, BYTE opcode) {
