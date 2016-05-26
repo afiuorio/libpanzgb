@@ -1,20 +1,19 @@
-.PHONY: all
-.PHONY: clean
+SOURCES = src/pc_main.c $(wildcard src/gb-emu/*.c)
+OBJECTS=$(SOURCES:.c=.o)
+COMPILER_FLAGS = -c -O2 -std=c99 -Wall -Wextra -pedantic -flto -march=native
+EXECUTABLE = panz-gb
 
-all: win osx linux
+CC = clang
+INCLUDE_PATHS =
+LIBRARY_PATHS =
+LINKER_FLAGS = -framework SDL2 -flto
 
-.PHONY: win
-windows:
-	make -f Makefile.win
+all: $(SOURCES) $(EXECUTABLE)
 
-.PHONY: linux
-linux:
-	make -f Makefile.linux
-
-.PHONY: osx
-osx:
-	make -f Makefile.osx
-
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(OBJECTS) -o $@
+.c.o:
+	$(CC) $(INCLUDE_PATHS) $(COMPILER_FLAGS) $< -o $@
+	
 clean:
-		@rm src/*.o
-		@rm src/gb-emu/*.o
+	@rm src/*.o src/gb-emu/*.o

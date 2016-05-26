@@ -19,10 +19,7 @@ void loadROM(gb *cpu, char *rom) {
     case 2:
     case 3:
     case 0x13:
-        /*  case 0x19 :
-          case 0x1A :
-          case 0x1B :*/
-        break;
+    break;
 
     default:
         printf("Can't execute this rom (ROM code: %x)\n",
@@ -40,48 +37,8 @@ void initGameBoy(gb *cpu) {
     cpu->whenDisableInterrupts = 0;
     cpu->enable_interr = 0;
     cpu->stack = 0xFFFE;
-    cpu->A = 0x01;
-    cpu->F = 0xB0;
-    cpu->B = 0x00;
-    cpu->C = 0x13;
-    cpu->D = 0x00;
-    cpu->E = 0xD8;
-    cpu->H = 0x01;
-    cpu->L = 0x4D;
 
     memset(cpu->memory, 0, MEMORY_SIZE);
-
-    cpu->memory[0xFF05] = 0x00;
-    cpu->memory[0xFF06] = 0x00;
-    cpu->memory[0xFF07] = 0x00;
-    cpu->memory[0xFF10] = 0x80;
-    cpu->memory[0xFF11] = 0xBF;
-    cpu->memory[0xFF12] = 0xF3;
-    cpu->memory[0xFF14] = 0xBF;
-    cpu->memory[0xFF16] = 0x3F;
-    cpu->memory[0xFF17] = 0x00;
-    cpu->memory[0xFF19] = 0xBF;
-    cpu->memory[0xFF1A] = 0x7F;
-    cpu->memory[0xFF1B] = 0xFF;
-    cpu->memory[0xFF1C] = 0x9F;
-    cpu->memory[0xFF1E] = 0xBF;
-    cpu->memory[0xFF20] = 0xFF;
-    cpu->memory[0xFF21] = 0x00;
-    cpu->memory[0xFF22] = 0x00;
-    cpu->memory[0xFF23] = 0xBF;
-    cpu->memory[0xFF24] = 0x77;
-    cpu->memory[0xFF25] = 0xF3;
-    cpu->memory[0xFF26] = 0xF1;
-    cpu->memory[0xFF40] = 0x91;
-    cpu->memory[0xFF42] = 0x00;
-    cpu->memory[0xFF43] = 0x00;
-    cpu->memory[0xFF45] = 0x00;
-    cpu->memory[0xFF47] = 0xFC;
-    cpu->memory[0xFF48] = 0xFF;
-    cpu->memory[0xFF49] = 0xFF;
-    cpu->memory[0xFF4A] = 0x00;
-    cpu->memory[0xFF4B] = 0x00;
-    cpu->memory[0xFFFF] = 0x00;
 
     cpu->master_interr_switch = 0;
 
@@ -176,7 +133,6 @@ BYTE executeGameBoy(gb *cpu) {
 
     if (cpu->cpuHalted != 0) {
         GET_BYTE_PC(cpu, opcode);
-        // numClock = hashMap[opcode](cpu);
         numClock = executeOpcode(cpu, opcode);
 
         if (cpu->whenDisableInterrupts > 0) {
@@ -200,7 +156,6 @@ gb *newGameboy(char *rom) {
     }
     loadROM(game, rom);
     initGameBoy(game);
-    // loadSaveRam(game);
     return game;
 }
 

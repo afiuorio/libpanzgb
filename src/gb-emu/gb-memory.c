@@ -19,35 +19,9 @@ void setGbBanking(gb *cpu) {
         cpu->currentROMBank = 1;
         cpu->changeBank = mbc3_changeBank;
         break;
-
-        /*       case 0x19 :
-               case 0x1A :
-               case 0x1B :
-                   cpu->ROMType = 5;
-                   cpu->currentROMBank = 0;
-                   break;*/
     }
 
     cpu->currentRAMBank = 0;
-}
-
-void writeSaveRam(gb *cpu) {
-    FILE *f = fopen((char *)cpu->cartridge + NAME_CART, "wb");
-
-    fwrite(cpu->RAMBank, sizeof(0x10000), 1, f);
-    // printf("Created save state\n");
-    fclose(f);
-}
-
-void loadSaveRam(gb *cpu) {
-    FILE *f = fopen((char *)cpu->cartridge + NAME_CART, "rb");
-    if (f == NULL)
-        return;
-
-    fread(cpu->RAMBank, sizeof(0x10000), 1, f);
-    printf("Load\n");
-    // setGbBanking(cpu);
-    fclose(f);
 }
 
 BYTE readMemory(gb *cpu, WORD addr) {

@@ -4,29 +4,9 @@
 #include <time.h>
 #include "gb-emu/gb.h"
 
-#define NUM_OP_60HZ (GB_CLOCK / 59.7)
+#define NUM_OP_60HZ (GB_CLOCK / GB_SCREEN_REFRESH_RATE)
 
 #define SCALE 5
-
-void makeSaveState(gb *cpu) {
-    FILE *f = fopen("savestate", "wb");
-
-    /*0x225a30 is sizeof(gb) on x64*/
-    fwrite(cpu, 0x225a30, 1, f);
-    printf("Created save state\n");
-    fclose(f);
-}
-
-void loadSaveState(gb *cpu) {
-    FILE *f = fopen("savestate", "rb");
-    if (f == NULL)
-        return;
-
-    fread(cpu, 0x225a30, 1, f);
-    printf("Loaded save state\n");
-    setGbBanking(cpu);
-    fclose(f);
-}
 
 void doScreenshoot(SDL_Renderer *renderer) {
     time_t name;
@@ -103,12 +83,6 @@ void getInput(gb *cpu, SDL_Renderer *rend) {
             case SDLK_f:
                 doScreenshoot(rend);
                 return;
-            case SDLK_s:
-                makeSaveState(cpu);
-                return;
-            case SDLK_d:
-                loadSaveState(cpu);
-                return;
 
             default:
                 return;
@@ -126,7 +100,7 @@ gb *gameboy;
 
 int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Window *window = SDL_CreateWindow("pangb", SDL_WINDOWPOS_UNDEFINED,
+    SDL_Window *window = SDL_CreateWindow("panz-gb", SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED, 160 * SCALE,
                                           144 * SCALE, SDL_WINDOW_OPENGL);
     SDL_Renderer *renderer =
@@ -149,7 +123,6 @@ int main(int argc, char **argv) {
         renderScreen(gameboy, renderer, surface);
         float deltaT =
             (float)1000 / (59.7) - (float)(SDL_GetTicks() - timeStartFrame);
-        // printf("delta %f\n",deltaT);
         if (deltaT > 0)
             SDL_Delay((unsigned int)deltaT);
     }

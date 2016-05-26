@@ -5,13 +5,12 @@
 BYTE executeOpcode(gb *cpu, BYTE opcode) {
     BYTE val = 0;
     SIGNED_BYTE s_val = 0;
-    //  printf("PC %x = %x\n",cpu->progCounter-1, opcode);
     WORD val_16 = 0;
     switch (opcode) {
     case 0x00:
         return 4;
     case 0x76:
-        // cpu->cpuHalted = 0;
+        //cpu->cpuHalted = 0;
         return 4;
     case 0x06:
         GET_BYTE_PC(cpu, val)
@@ -224,10 +223,7 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
         return 8;
     case 0x1A:
         val = readMemory(cpu, getDE(cpu));
-        // if(cpu->progCounter-1 == 0x28e8)
-        //	printf("get %x from %x \n",val, getDE(cpu));
         cpu->A = val;
-        // LOAD_8BIT(&(cpu->A), val);
         return 8;
     case 0xFA:
         GET_WORD_PC(cpu, val_16);
@@ -237,10 +233,6 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
     case 0x3E:
         GET_BYTE_PC(cpu, val);
         LOAD_8BIT(&(cpu->A), val);
-        /* if(cpu->progCounter-2==0x6222)
-              printf("(val %x) %x %x %x %x %x %x %x %x %x\n",val,cpu->A, cpu->B,
-           cpu->C, cpu->D, cpu->E, cpu->F, cpu->H, cpu->L, cpu->currentROMBank);
-*/
         return 8;
 
     case 0x47:
@@ -333,7 +325,6 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
     case 0xF8:
         GET_BYTE_PC(cpu, s_val);
         val_16 = cpu->stack + s_val;
-        //  ADD_16BIT(cpu,&(cpu->H),&(cpu->L),val_16);
         RESET_ZFLAG(cpu);
         RESET_NFLAG(cpu);
 
@@ -724,8 +715,6 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
     case 0xE8:
         GET_BYTE_PC(cpu, s_val);
         val_16 = cpu->stack + s_val;
-        // printf("E8: %x(%d) + %x(%d) = %x(%d)\n",cpu->stack,cpu->stack,
-        // s_val,s_val,val_16, val_16);
         RESET_ZFLAG(cpu);
         RESET_NFLAG(cpu);
 
@@ -789,12 +778,10 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
     case 0xF3:
         cpu->whenDisableInterrupts = 2;
         cpu->enable_interr = 0;
-        // cpu->master_interr_switch = 0;
         return 4;
     case 0xFB:
         cpu->whenDisableInterrupts = 2;
         cpu->enable_interr = 1;
-        // cpu->master_interr_switch = 1;
         return 4;
 
     case 0xC3:
@@ -930,7 +917,6 @@ BYTE executeOpcode(gb *cpu, BYTE opcode) {
         return 32;
     case 0xC9:
         POP(cpu, cpu->stack, val_16);
-        // printf("pop %x\n");
         cpu->progCounter = val_16;
         return 8;
     case 0xC0:

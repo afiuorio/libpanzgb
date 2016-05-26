@@ -16,6 +16,7 @@ typedef uint16_t WORD;
 typedef int16_t SIGNED_WORD;
 
 #define GB_CLOCK 4194304
+#define GB_SCREEN_REFRESH_RATE 59.7
 typedef struct gameboy gb;
 
 gb *newGameboy(char *rom);

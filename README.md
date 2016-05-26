@@ -1,17 +1,17 @@
-# pangb
+# panz-gb
 
-pangb is an emulator for the Gameboy system. It's written in C, making it easily portable, and tries to emulate the original hardware as closely as possible.
+panz-gb is an emulator for the Gameboy system. It's written in C, making it easily portable, and tries to emulate the original hardware as closely as possible.
 
 ## Status
 
-At the moment pangb doesn't support:
+At the moment panz-gb doesn't support:
 
 - Sound
-- All MBC chips except MBC1
+- All MBC chips except MBC1 and (partially) MBC3
 - Link cable support
 - STOP opcode
 - Save RAM
 
 ## Build
 
-pangb uses [SDL 2.0](http://www.libsdl.org). A makefile for Windows (win), Linux (linux) and OSX (osx) is provided.
+The panz-gb frontend uses [SDL 2.0](http://www.libsdl.org). A makefile is provided for OSX, but you should be able to compile the project with any C99 compatible compiler.
