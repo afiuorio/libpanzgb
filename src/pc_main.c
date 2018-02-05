@@ -6,7 +6,7 @@
 
 #define NUM_OP_60HZ (GB_CLOCK / GB_SCREEN_REFRESH_RATE)
 
-#define SCALE 5
+#define SCALE 4
 
 void doScreenshoot(SDL_Renderer *renderer) {
     time_t name;

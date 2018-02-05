@@ -3,17 +3,17 @@ OBJECTS=$(SOURCES:.c=.o)
 COMPILER_FLAGS = -c -O2 -std=c99 -Wall -Wextra -pedantic -flto -march=native
 EXECUTABLE = panz-gb
 
-CC = clang
+CC = gcc
 INCLUDE_PATHS =
 LIBRARY_PATHS =
-LINKER_FLAGS = -framework SDL2 -flto
+LINKER_FLAGS = -lSDL2
 
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(OBJECTS) -o $@
+	$(CC) $(OBJECTS) $(LIBRARY_PATHS) $(LINKER_FLAGS) -o $@
 .c.o:
 	$(CC) $(INCLUDE_PATHS) $(COMPILER_FLAGS) $< -o $@
-	
+
 clean:
 	@rm src/*.o src/gb-emu/*.o
