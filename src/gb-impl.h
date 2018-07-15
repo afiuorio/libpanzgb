@@ -1,6 +1,6 @@
 #ifndef GB_IMPL_H
 #define GB_IMPL_H
-#include "gb.h"
+#include "panzgb.h"
 
 #define NAME_CART 0x134
 

@@ -1,5 +1,5 @@
-#ifndef GB_H
-#define GB_H
+#ifndef PANZGB_H
+#define PANZGB_H
 /*
  * BYTE must always be an unsigned, 8 bit value
  * WORD must always be an unsigned, 16 bit value

@@ -1,10 +1,12 @@
-# panz-gb
+# libpanzgb
 
-panz-gb is an emulator for the Gameboy system. It's written in C and tries to emulate the original hardware as closely as possible.
+libpanzgb is a C99 library that implements a Gameboy emulator. It tries to emulate the original hardware as closely as possible. Since it's written using only C99 without any external dependencies, it should be working on almost every platform with a C compiler.
+
+Please note that this is only a "backend" library: for playing with the emulator itself is necessary an application that uses libpanzgb.
 
 ## Status
 
-At the moment panz-gb doesn't support:
+At the moment libpanzgb doesn't support:
 
 - Sound
 - All MBC chips except MBC1 and (partially) MBC3
@@ -14,4 +16,9 @@ At the moment panz-gb doesn't support:
 
 ## Build
 
-The panz-gb frontend uses [SDL 2.0](http://www.libsdl.org). A makefile is provided for Linux but you should be able to compile the project with any C99 compatible compiler.
+A makefile for Linux is provided: if you have gcc installed, a simple
+```bash
+make
+```
+
+should be enough for compile the library. Since the library doesn't require any extra dependencies, it should be easy to compile the library on any platform that possess a C99 compiler.
